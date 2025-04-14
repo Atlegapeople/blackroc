@@ -1,4 +1,6 @@
 import React from "react";
+// Comment out navigate for now as we don't have proper router setup
+// import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import HeroSection from "./HeroSection";
 import ProductsSection from "./ProductsSection";
@@ -51,6 +53,7 @@ const ScrollProgressBar = () => {
 // MAIN COMPONENT: HomePage
 // ============================================
 const HomePage = () => {
+  // const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   // ============================================
@@ -68,6 +71,12 @@ const HomePage = () => {
     setIsMenuOpen(false);
   };
 
+  const handleLogin = () => {
+    // navigate('/login');
+    window.location.href = '/login';
+    setIsMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* ============================================
@@ -77,6 +86,7 @@ const HomePage = () => {
         <ScrollProgressBar />
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
+            {/* Logo */}
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -103,6 +113,16 @@ const HomePage = () => {
                   {item}
                 </motion.button>
               ))}
+
+              {/* Login Button (Desktop) */}
+              <motion.button
+                onClick={handleLogin}
+                className="ml-4 px-4 py-2 rounded bg-black text-white hover:bg-gray-800 transition"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Login
+              </motion.button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -131,6 +151,15 @@ const HomePage = () => {
                   {item}
                 </motion.button>
               ))}
+
+              {/* Login Button (Mobile) */}
+              <motion.button
+                onClick={handleLogin}
+                className="block w-full px-4 py-2 rounded bg-black text-white hover:bg-gray-800 transition"
+                whileHover={{ x: 5 }}
+              >
+                Login
+              </motion.button>
             </div>
           </motion.div>
         </div>
