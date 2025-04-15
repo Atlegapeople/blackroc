@@ -195,19 +195,6 @@ const DashboardLayout = () => {
               </li>
               <li>
                 <Link
-                  to="/dashboard/admin/invoices/create"
-                  className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                    activeMenu === "admin"
-                      ? "bg-gray-100 text-gray-900"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  }`}
-                >
-                  <FileText className="mr-3 h-5 w-5 text-gray-500" />
-                  Create Invoices
-                </Link>
-              </li>
-              <li>
-                <Link
                   to="/dashboard/settings"
                   className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                     activeMenu === "settings"
@@ -325,20 +312,6 @@ const DashboardLayout = () => {
                   >
                     <Users className="mr-3 h-5 w-5 text-gray-500" />
                     Customers
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/dashboard/admin/invoices/create"
-                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                      activeMenu === "admin"
-                        ? "bg-gray-100 text-gray-900"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <FileText className="mr-3 h-5 w-5 text-gray-500" />
-                    Create Invoices
                   </Link>
                 </li>
                 <li>

@@ -1,14 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, FileText, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useReactToPrint } from 'react-to-print';
 
 export default function CreateInvoices() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
+  const invoiceRef = useRef<HTMLDivElement>(null);
+  const quoteRef = useRef<HTMLDivElement>(null);
+  const orderRef = useRef<HTMLDivElement>(null);
+  
+  // Properly initialize the print handlers at the top level with correct typing
+  const handlePrintInvoice = useReactToPrint({
+    contentRef: invoiceRef,
+    documentTitle: 'Invoice',
+    onAfterPrint: () => console.log('Invoice printed successfully'),
+  });
+  
+  const handlePrintQuote = useReactToPrint({
+    contentRef: quoteRef,
+    documentTitle: 'Quote',
+    onAfterPrint: () => console.log('Quote printed successfully'),
+  });
+  
+  const handlePrintOrder = useReactToPrint({
+    contentRef: orderRef,
+    documentTitle: 'Order',
+    onAfterPrint: () => console.log('Order printed successfully'),
+  });
+  
+  // Wrap the print handlers in regular functions to use with onClick
+  const exportQuoteToPdf = () => handlePrintQuote();
+  const exportOrderToPdf = () => handlePrintOrder();
+  const exportInvoiceToPdf = () => handlePrintInvoice();
   
   const createInvoicesForUnpaidOrders = async () => {
     setIsLoading(true);
@@ -231,9 +259,19 @@ export default function CreateInvoices() {
                       Order: {result.orderId}
                     </p>
                     {result.success ? (
-                      <p className="text-green-700">
-                        Invoice created successfully: {result.invoiceId}
-                      </p>
+                      <div>
+                        <p className="text-green-700">
+                          Invoice created successfully: {result.invoiceId}
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          className="mt-2 text-xs"
+                          onClick={() => navigate(`/finance/invoices/${result.invoiceId}/pdf`)}
+                        >
+                          <FileText className="h-3 w-3 mr-1" />
+                          View PDF
+                        </Button>
+                      </div>
                     ) : (
                       <p className="text-red-700">
                         Failed: {result.error}
@@ -244,6 +282,99 @@ export default function CreateInvoices() {
               </ul>
             </div>
           )}
+        </CardContent>
+      </Card>
+      
+      {/* Export Documents Card */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Export Documents</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">Export quotes, orders, and invoices to PDF.</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Quotes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={exportQuoteToPdf}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Quote to PDF
+                </Button>
+                
+                {/* Hidden quote template for printing */}
+                <div className="hidden">
+                  <div ref={quoteRef}>
+                    {/* Quote content will be populated when needed */}
+                    <div className="p-8 bg-white">
+                      <h1 className="text-2xl font-bold">Quote Template</h1>
+                      <p>This is a sample quote document.</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Orders</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={exportOrderToPdf}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Order to PDF
+                </Button>
+                
+                {/* Hidden order template for printing */}
+                <div className="hidden">
+                  <div ref={orderRef}>
+                    {/* Order content will be populated when needed */}
+                    <div className="p-8 bg-white">
+                      <h1 className="text-2xl font-bold">Order Template</h1>
+                      <p>This is a sample order document.</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Invoices</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={exportInvoiceToPdf}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Invoice to PDF
+                </Button>
+                
+                {/* Hidden invoice template for printing */}
+                <div className="hidden">
+                  <div ref={invoiceRef}>
+                    {/* Invoice content will be populated when needed */}
+                    <div className="p-8 bg-white">
+                      <h1 className="text-2xl font-bold">Invoice Template</h1>
+                      <p>This is a sample invoice document.</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </CardContent>
       </Card>
     </div>

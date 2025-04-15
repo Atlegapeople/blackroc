@@ -82,15 +82,21 @@ const InvoiceView: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [remainingAmount, setRemainingAmount] = useState(0);
   
-  // React-to-print hook setup
-  const handlePrint = useCallback(() => {
-    if (invoiceRef.current) {
-      useReactToPrint({
-        content: () => invoiceRef.current,
-        documentTitle: `Invoice-${invoice?.invoice_number || 'BlackRoc'}`,
-      } as any)();
-    }
-  }, [invoice]);
+  // React-to-print hook setup - properly at the top level
+  const handlePrint = useReactToPrint({
+    contentRef: invoiceRef,
+    documentTitle: `Invoice-${invoice?.invoice_number || 'BlackRoc'}`,
+    onAfterPrint: () => console.log('Printed successfully'),
+  });
+  
+  // Wrapper functions for button clicks
+  const printInvoice = useCallback(() => {
+    handlePrint();
+  }, [handlePrint]);
+  
+  const downloadPdf = useCallback(() => {
+    handlePrint();
+  }, [handlePrint]);
   
   useEffect(() => {
     const fetchInvoiceData = async () => {
@@ -106,13 +112,6 @@ const InvoiceView: React.FC = () => {
 
         if (orderError) throw orderError;
         
-        // Check if order is paid
-        if (order.payment_status !== "paid") {
-          setError("Invoice is only available for paid orders");
-          setLoading(false);
-          return;
-        }
-
         // Fetch associated quote for items and services
         const { data: quote, error: quoteError } = await supabase
           .from("quotes")
@@ -358,7 +357,7 @@ const InvoiceView: React.FC = () => {
             
             <Button 
               variant="outline" 
-              onClick={handlePrint}
+              onClick={printInvoice}
               className="flex items-center"
               disabled={loading || !!error}
             >
@@ -367,7 +366,7 @@ const InvoiceView: React.FC = () => {
             </Button>
             <Button 
               className="bg-blue-600 hover:bg-blue-700 flex items-center"
-              onClick={handlePrint}
+              onClick={downloadPdf}
             >
               <Download className="h-4 w-4 mr-2" />
               Download PDF
@@ -412,8 +411,14 @@ const InvoiceView: React.FC = () => {
                       <span className="text-sm text-gray-600 mr-1">Due Date:</span>
                       <span className="font-medium">{formatDate(invoice.date_paid)}</span>
                     </div>
-                    <div className="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">
-                      Paid
+                    <div className={`mt-3 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      invoice.payment_status === 'paid' 
+                        ? 'bg-green-100 text-green-800' 
+                        : invoice.payment_status === 'partial' 
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                    }`}>
+                      {invoice.payment_status.charAt(0).toUpperCase() + invoice.payment_status.slice(1)}
                     </div>
                   </div>
                 </div>
