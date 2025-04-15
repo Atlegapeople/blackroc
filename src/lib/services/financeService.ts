@@ -146,62 +146,55 @@ export const deleteInvoice = async (invoiceId: string): Promise<boolean> => {
 /**
  * Record a payment
  */
-export const recordPayment = async (payment: Omit<Payment, 'id' | 'created_at' | 'updated_at'>): Promise<string | null> => {
+export const recordPayment = async (data: PaymentFormData): Promise<Payment | null> => {
   try {
-    const completePayment = {
-      ...payment,
-      id: uuidv4()
-    };
-
-    const { data, error } = await supabase
-      .from('payments')
-      .insert(completePayment)
-      .select('id')
+    // Generate a payment number
+    const paymentNumber = `PMT-${Date.now().toString().slice(-8)}`;
+    
+    // Get the customer ID from the invoice
+    const { data: invoice, error: invoiceError } = await supabase
+      .from('invoices')
+      .select('customer_id')
+      .eq('id', data.invoice_id)
       .single();
-
+      
+    if (invoiceError || !invoice) {
+      console.error('Error fetching invoice for payment:', invoiceError);
+      throw new Error('Could not find invoice');
+    }
+    
+    // Prepare the payment data
+    const paymentData = {
+      invoice_id: data.invoice_id,
+      customer_id: invoice.customer_id,
+      payment_number: paymentNumber,
+      payment_date: data.payment_date,
+      amount: data.amount,
+      payment_method: data.payment_method,
+      reference_number: data.reference_number,
+      status: 'completed' as const,
+      notes: data.notes
+    };
+    
+    // Insert the payment
+    const { data: payment, error } = await supabase
+      .from('payments')
+      .insert(paymentData)
+      .select()
+      .single();
+      
     if (error) {
       console.error('Error recording payment:', error);
       throw error;
     }
-
-    // Create a ledger entry for this payment
-    await createLedgerEntry({
-      customer_id: payment.customer_id,
-      payment_id: data.id,
-      invoice_id: payment.invoice_id,
-      entry_date: payment.payment_date,
-      entry_type: 'payment',
-      description: `Payment #${payment.payment_number} for Invoice`,
-      amount: -payment.amount, // Negative amount for payments
-      running_balance: 0 // This will be calculated by the database trigger
-    });
     
-    // Get the invoice to find its related order
-    const { data: invoice, error: invoiceError } = await supabase
-      .from('invoices')
-      .select('order_id, total_amount, paid_amount')
-      .eq('id', payment.invoice_id)
-      .single();
-      
-    if (!invoiceError && invoice && invoice.order_id) {
-      // Calculate if the invoice is fully paid
-      const isPaid = invoice.paid_amount + payment.amount >= invoice.total_amount;
-      
-      // Update the related order's payment status
-      const { error: orderError } = await supabase
-        .from('orders')
-        .update({ 
-          payment_status: isPaid ? 'paid' : 'partial',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', invoice.order_id);
-        
-      if (orderError) {
-        console.error('Error updating order payment status:', orderError);
-      }
-    }
-
-    return data.id;
+    // Update the invoice paid amount and status
+    await updateInvoiceAfterPayment(data.invoice_id, data.amount);
+    
+    // Create a ledger entry for the payment
+    await createPaymentLedgerEntry(payment.id);
+    
+    return payment;
   } catch (error) {
     console.error('Error in recordPayment:', error);
     return null;
@@ -885,5 +878,102 @@ export const syncOrderInvoiceStatuses = async (): Promise<void> => {
     console.log('Finished syncing order and invoice payment statuses');
   } catch (error) {
     console.error('Error in syncOrderInvoiceStatuses:', error);
+  }
+};
+
+/**
+ * Update invoice after payment is recorded
+ */
+const updateInvoiceAfterPayment = async (invoiceId: string, paymentAmount: number): Promise<void> => {
+  try {
+    // Get current invoice details
+    const { data: invoice, error: fetchError } = await supabase
+      .from('invoices')
+      .select('total_amount, paid_amount, outstanding_amount, order_id')
+      .eq('id', invoiceId)
+      .single();
+      
+    if (fetchError || !invoice) {
+      console.error('Error fetching invoice for payment update:', fetchError);
+      return;
+    }
+    
+    // Calculate new amounts
+    const newPaidAmount = (invoice.paid_amount || 0) + paymentAmount;
+    const newOutstandingAmount = invoice.total_amount - newPaidAmount;
+    
+    // Determine new payment status
+    let newPaymentStatus = 'unpaid';
+    if (newPaidAmount >= invoice.total_amount) {
+      newPaymentStatus = 'paid';
+    } else if (newPaidAmount > 0) {
+      newPaymentStatus = 'partial';
+    }
+    
+    // Update invoice
+    const { error: updateError } = await supabase
+      .from('invoices')
+      .update({
+        paid_amount: newPaidAmount,
+        outstanding_amount: newOutstandingAmount,
+        payment_status: newPaymentStatus,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', invoiceId);
+      
+    if (updateError) {
+      console.error('Error updating invoice after payment:', updateError);
+      return;
+    }
+    
+    // If invoice has an associated order, update its payment status too
+    if (invoice.order_id) {
+      const { error: orderError } = await supabase
+        .from('orders')
+        .update({ 
+          payment_status: newPaymentStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', invoice.order_id);
+        
+      if (orderError) {
+        console.error('Error updating order payment status:', orderError);
+      }
+    }
+  } catch (error) {
+    console.error('Error in updateInvoiceAfterPayment:', error);
+  }
+};
+
+/**
+ * Create a ledger entry for a payment
+ */
+const createPaymentLedgerEntry = async (paymentId: string): Promise<void> => {
+  try {
+    // Get payment details
+    const { data: payment, error: paymentError } = await supabase
+      .from('payments')
+      .select('*, invoices!inner(customer_id)')
+      .eq('id', paymentId)
+      .single();
+      
+    if (paymentError || !payment) {
+      console.error('Error fetching payment for ledger entry:', paymentError);
+      return;
+    }
+    
+    // Create the ledger entry
+    await createLedgerEntry({
+      customer_id: payment.invoices.customer_id,
+      payment_id: paymentId,
+      invoice_id: payment.invoice_id,
+      entry_date: payment.payment_date,
+      entry_type: 'payment',
+      description: `Payment #${payment.payment_number} for Invoice`,
+      amount: -payment.amount, // Negative amount for payments (credit)
+      running_balance: 0 // This will be calculated by the database trigger
+    });
+  } catch (error) {
+    console.error('Error in createPaymentLedgerEntry:', error);
   }
 }; 

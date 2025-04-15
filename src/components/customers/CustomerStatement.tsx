@@ -64,10 +64,15 @@ const CustomerStatement: React.FC = () => {
 
   const statementRef = useRef<HTMLDivElement>(null);
   
+  // Use our custom type definition
   const handlePrint = useReactToPrint({
     content: () => statementRef.current,
     documentTitle: `Statement-${customer?.name}-${startDate}`,
-  } as any);
+    onAfterPrint: () => console.log('Printed successfully')
+  });
+
+  // Simple wrapper function
+  const printStatement = () => handlePrint();
 
   useEffect(() => {
     const fetchCustomer = async () => {
@@ -210,7 +215,7 @@ const CustomerStatement: React.FC = () => {
             
             <Button 
               variant="outline" 
-              onClick={handlePrint}
+              onClick={printStatement}
               className="flex items-center"
             >
               <Printer className="h-4 w-4 mr-2" />
@@ -219,7 +224,7 @@ const CustomerStatement: React.FC = () => {
             
             <Button 
               className="bg-blue-600 hover:bg-blue-700 flex items-center"
-              onClick={handlePrint}
+              onClick={printStatement}
             >
               <Download className="h-4 w-4 mr-2" />
               Download PDF
@@ -327,19 +332,19 @@ const CustomerStatement: React.FC = () => {
                   <div className="flex flex-col space-y-1">
                     <div className="flex justify-between md:justify-end md:space-x-8">
                       <span className="text-gray-600">Opening Balance:</span>
-                      <span className="font-medium">{formatCurrency(statement.opening_balance)}</span>
+                      <span className="font-medium">{formatCurrency(statement.openingBalance)}</span>
                     </div>
                     <div className="flex justify-between md:justify-end md:space-x-8">
                       <span className="text-gray-600">Total Debits:</span>
-                      <span className="font-medium text-red-600">{formatCurrency(statement.total_debits)}</span>
+                      <span className="font-medium text-red-600">{formatCurrency(statement.totalDebits || 0)}</span>
                     </div>
                     <div className="flex justify-between md:justify-end md:space-x-8">
                       <span className="text-gray-600">Total Credits:</span>
-                      <span className="font-medium text-green-600">{formatCurrency(statement.total_credits)}</span>
+                      <span className="font-medium text-green-600">{formatCurrency(statement.totalCredits || 0)}</span>
                     </div>
                     <div className="flex justify-between md:justify-end md:space-x-8 pt-2 border-t border-gray-200 mt-2">
                       <span className="text-gray-800 font-medium">Closing Balance:</span>
-                      <span className="font-bold">{formatCurrency(statement.closing_balance)}</span>
+                      <span className="font-bold">{formatCurrency(statement.closingBalance)}</span>
                     </div>
                     <div className="flex justify-between md:justify-end md:space-x-8 pt-2 border-t border-gray-200 mt-2">
                       <span className="text-gray-800 font-medium">Current Balance:</span>
@@ -376,7 +381,7 @@ const CustomerStatement: React.FC = () => {
                         <TableCell><em>Opening Balance</em></TableCell>
                         <TableCell className="text-right"></TableCell>
                         <TableCell className="text-right"></TableCell>
-                        <TableCell className="text-right font-medium">{formatCurrency(statement.opening_balance)}</TableCell>
+                        <TableCell className="text-right font-medium">{formatCurrency(statement.openingBalance)}</TableCell>
                       </TableRow>
 
                       {statement.entries.map((entry: LedgerEntry, index: number) => {
@@ -388,7 +393,7 @@ const CustomerStatement: React.FC = () => {
                           } else {
                             return balance - prevEntry.amount;
                           }
-                        }, statement.opening_balance);
+                        }, statement.openingBalance);
                         
                         // Calculate current entry balance
                         const currentBalance = entry.entry_type === 'debit' 
@@ -426,7 +431,7 @@ const CustomerStatement: React.FC = () => {
                         <TableCell><em>Closing Balance</em></TableCell>
                         <TableCell className="text-right"></TableCell>
                         <TableCell className="text-right"></TableCell>
-                        <TableCell className="text-right font-bold">{formatCurrency(statement.closing_balance)}</TableCell>
+                        <TableCell className="text-right font-bold">{formatCurrency(statement.closingBalance)}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>

@@ -65,6 +65,8 @@ export interface CustomerStatement {
   openingBalance: number;
   entries: LedgerEntry[];
   closingBalance: number;
+  totalDebits?: number;
+  totalCredits?: number;
 }
 
 export interface InvoiceWithDetails extends Invoice {
@@ -105,28 +107,5 @@ export interface PaymentFormData {
   notes?: string;
 }
 
-// Extend the Database types to include our new tables
-declare module '../../types/supabase' {
-  interface Database {
-    public: {
-      Tables: {
-        // ... existing tables
-        invoices: {
-          Row: Invoice;
-          Insert: Omit<Invoice, 'id' | 'created_at' | 'updated_at'>;
-          Update: Partial<Omit<Invoice, 'id' | 'created_at' | 'updated_at'>>;
-        };
-        payments: {
-          Row: Payment;
-          Insert: Omit<Payment, 'id' | 'created_at' | 'updated_at'>;
-          Update: Partial<Omit<Payment, 'id' | 'created_at' | 'updated_at'>>;
-        };
-        ledger_entries: {
-          Row: LedgerEntry;
-          Insert: Omit<LedgerEntry, 'id' | 'created_at' | 'updated_at'>;
-          Update: Partial<Omit<LedgerEntry, 'id' | 'created_at' | 'updated_at'>>;
-        };
-      };
-    };
-  }
-} 
+// NOTE: The Database interface extension has been moved to a separate file
+// to avoid conflicts with existing type definitions 

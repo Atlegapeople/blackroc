@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { PaymentFormData } from '../../lib/interfaces/finance';
+import { PaymentFormData, Payment } from '../../lib/interfaces/finance';
 import { recordPayment } from '../../lib/services/financeService';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -24,14 +24,7 @@ import {
   SelectValue,
 } from '../ui/select';
 import { formatCurrency } from '../../lib/utils';
-
-const paymentFormSchema = z.object({
-  invoice_id: z.string().uuid(),
-  amount: z.number().positive(),
-  method: z.enum(['eft', 'cash', 'card', 'other']),
-  reference: z.string().optional(),
-  notes: z.string().optional(),
-});
+import { paymentFormSchema } from './paymentSchema';
 
 interface PaymentFormProps {
   invoiceId: string;
@@ -69,8 +62,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       const paymentData: PaymentFormData = {
         invoice_id: data.invoice_id,
         amount: data.amount,
-        method: data.method,
-        reference: data.reference,
+        payment_method: data.method as Payment['payment_method'],
+        reference_number: data.reference,
+        payment_date: new Date().toISOString().split('T')[0],
         notes: data.notes,
       };
       
