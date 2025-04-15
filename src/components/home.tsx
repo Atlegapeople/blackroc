@@ -8,6 +8,7 @@ import ContactSection from "./ContactSection";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import logo from "../images/logo.png";
+import { usePageTitle } from "../lib/hooks/usePageTitle";
 import {
   ArrowRight,
   MapPin,
@@ -55,7 +56,10 @@ const ScrollProgressBar = () => {
 const HomePage = () => {
   // const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-
+  
+  // Set page title for home page
+  usePageTitle("Construction Materials & Supplies");
+  
   // ============================================
   // Navigation handler
   // ============================================

@@ -24,6 +24,7 @@ import { Switch } from './ui/switch';
 import { Separator } from './ui/separator';
 import { useToast } from './ui/use-toast';
 import { supabase } from '../lib/supabase';
+import { usePageTitle } from '../lib/hooks/usePageTitle';
 
 const Settings = () => {
   const { toast } = useToast();
@@ -110,6 +111,9 @@ const Settings = () => {
     
     fetchUserProfile();
   }, []);
+  
+  // Set page title
+  usePageTitle("Settings");
   
   const handleUserProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserProfile({

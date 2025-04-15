@@ -16,3 +16,12 @@ export function formatCurrency(amount: number): string {
     maximumFractionDigits: 2
   }).format(amount);
 }
+
+/**
+ * Sets the document title with consistent branding
+ * @param pageTitle The specific page title to display
+ */
+export function setPageTitle(pageTitle: string): void {
+  const companyName = "BlackRoc Construction Materials";
+  document.title = pageTitle ? `${pageTitle} | ${companyName}` : companyName;
+}

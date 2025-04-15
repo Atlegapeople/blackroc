@@ -1,10 +1,11 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { ArrowLeft, Loader2, FileText, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useReactToPrint } from 'react-to-print';
+import { usePageTitle } from '../../lib/hooks/usePageTitle';
 
 export default function CreateInvoices() {
   const navigate = useNavigate();
@@ -13,6 +14,9 @@ export default function CreateInvoices() {
   const invoiceRef = useRef<HTMLDivElement>(null);
   const quoteRef = useRef<HTMLDivElement>(null);
   const orderRef = useRef<HTMLDivElement>(null);
+  
+  // Set page title
+  usePageTitle("Generate Invoices");
   
   // Properly initialize the print handlers at the top level with correct typing
   const handlePrintInvoice = useReactToPrint({
