@@ -13,7 +13,7 @@ const HeroSection = ({
   tagline = "A CONSTRUCTION AGGREGATES SUPPLIER",
   missionStatement = "Black Roc (Pty) Ltd is a construction aggregates and brick distributor across Gauteng, founded in 2018. We deliver high-quality materials with exceptional service to meet all your construction needs.",
   ctaText = "Request a Quote",
-  backgroundImage = "/src/images/hero.webp",
+  backgroundImage = "/images/hero.webp",
 }: HeroSectionProps) => {
   return (
     <div className="relative w-full h-[600px] bg-jet-300 overflow-hidden">

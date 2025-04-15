@@ -7,7 +7,6 @@ import ProductsSection from "./ProductsSection";
 import ContactSection from "./ContactSection";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
-import logo from "../images/logo.png";
 import { usePageTitle } from "../lib/hooks/usePageTitle";
 import {
   ArrowRight,
@@ -97,7 +96,7 @@ const HomePage = () => {
               transition={{ duration: 0.3 }}
             >
               <img 
-                src={logo} 
+                src="/images/logo.png" 
                 alt="BlackRoc Logo" 
                 className="h-14 cursor-pointer hover:opacity-90 transition-opacity duration-200"
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}

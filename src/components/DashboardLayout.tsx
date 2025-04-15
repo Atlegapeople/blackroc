@@ -17,12 +17,13 @@ import {
   Bell,
   User,
   Menu,
-  CircleDollarSign
+  CircleDollarSign,
+  X
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "../lib/supabase";
 import { signOut } from "../lib/auth";
-import logo from "../images/logo.png";
+// import logo from "../images/logo.png";
 
 // Import dropdown menu components
 import {
@@ -94,7 +95,7 @@ const DashboardLayout = () => {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
         <div className="flex flex-col items-center">
-          <img src={logo} alt="BlackRoc Logo" className="h-12 mb-4" />
+          <img src="/images/logo.png" alt="BlackRoc Logo" className="h-12 mb-4" />
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
         </div>
       </div>
@@ -120,7 +121,7 @@ const DashboardLayout = () => {
           {/* Logo */}
           <div className="px-6 pt-6 pb-4">
             <Link to="/">
-              <img src={logo} alt="BlackRoc Logo" className="h-8" />
+              <img src="/images/logo.png" alt="BlackRoc Logo" className="h-8" />
             </Link>
           </div>
           <Separator />
@@ -235,10 +236,10 @@ const DashboardLayout = () => {
           <div className="relative flex flex-col w-72 max-w-xs h-full bg-white">
             <div className="flex items-center justify-between p-4 border-b">
               <Link to="/" className="flex items-center">
-                <img src={logo} alt="BlackRoc Logo" className="h-8" />
+                <img src="/images/logo.png" alt="BlackRoc Logo" className="h-8" />
               </Link>
               <button onClick={() => setMobileMenuOpen(false)}>
-                <AlertCircle className="h-6 w-6 text-gray-500" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 

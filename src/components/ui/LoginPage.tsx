@@ -1,5 +1,5 @@
 import AuthForm from "../ui/AuthForm";
-import logo from "../../images/logo.png";
+// import logo from "../../images/logo.png";
 import { Link } from "react-router-dom";
 
 export default function LoginPage() {
@@ -9,7 +9,7 @@ export default function LoginPage() {
         <div className="mb-8 text-center">
           <Link to="/">
             <img 
-              src={logo} 
+              src="/images/logo.png" 
               alt="BlackRoc Logo" 
               className="h-20 mx-auto mb-4 cursor-pointer hover:opacity-90 transition-opacity duration-200"
             />

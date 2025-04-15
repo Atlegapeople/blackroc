@@ -1,7 +1,7 @@
 import React from "react";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { Separator } from "./ui/separator";
-import logo from "../images/logo.png";
+// import logo from "../images/logo.png";
 
 const Footer = () => {
   return (
@@ -9,7 +9,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <img src={logo} alt="BlackRoc Logo" className="h-14 mb-4" />
+            <img src="/images/logo.png" alt="BlackRoc Logo" className="h-14 mb-4" />
             <p className="text-champagne-400">
               Building Foundations for Success
             </p>

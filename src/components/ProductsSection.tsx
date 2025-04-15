@@ -130,7 +130,7 @@ const defaultProducts: Product[] = [
     description:
       "High-quality building sand perfect for general construction and masonry work.",
     category: "sands",
-    imageUrl: "/src/images/buildingsand.jpg",
+    imageUrl: "/images/buildingsand.jpg",
   },
   {
     id: "2",
@@ -138,8 +138,7 @@ const defaultProducts: Product[] = [
     description:
       "Natural river sand that is washed and screened for various construction applications.",
     category: "sands",
-    imageUrl:
-            "/src/images/riversand.jpg",
+    imageUrl: "/images/riversand.jpg",
   },
   {
     id: "3",
@@ -147,8 +146,7 @@ const defaultProducts: Product[] = [
     description:
       "Fine-grained sand specifically formulated for plastering and rendering.",
     category: "sands",
-    imageUrl:
-          "/src/images/plasteringsand.jpg",
+    imageUrl: "/images/plasteringsand.jpg",
   },
   {
     id: "4",
@@ -156,8 +154,7 @@ const defaultProducts: Product[] = [
     description:
       "Medium-sized crushed stone aggregate ideal for concrete mixing and drainage.",
     category: "stone",
-    imageUrl:
-      "/src/images/19mmstone.jpg",
+    imageUrl: "/images/19mmstone.jpg",
   },
   {
     id: "5",
@@ -165,8 +162,7 @@ const defaultProducts: Product[] = [
     description:
       "Smaller crushed stone perfect for detailed concrete work and surfacing.",
     category: "stone",
-    imageUrl:
-      "/src/images/13mmstone.jpg",
+    imageUrl: "/images/13mmstone.jpg",
   },
   {
     id: "6",
@@ -174,8 +170,7 @@ const defaultProducts: Product[] = [
     description:
       "Pre-mixed combination of sand and stone ready for concrete applications.",
     category: "mix",
-    imageUrl:
-      "/src/images/buildersmix.jpg",
+    imageUrl: "/images/buildersmix.jpg",
   },
   {
     id: "7",
@@ -183,8 +178,7 @@ const defaultProducts: Product[] = [
     description:
       "Crushed stone material suitable for road base and sub-base construction.",
     category: "other",
-    imageUrl:
-      "/src/images/g5material.jpg",
+    imageUrl: "/images/g5material.jpg",
   },
   {
     id: "8",
@@ -192,16 +186,15 @@ const defaultProducts: Product[] = [
     description:
       "Large stone pieces used for gabion baskets and retaining wall structures.",
     category: "other",
-    imageUrl:
-      "/src/images/gabionrock.jpg",
+    imageUrl: "/images/gabionrock.jpg",
   },
   {
     id: "9",
     name: "Double Washed Plaster",
-    description: "Premium washed plaster sand for high-quality finishing work.",
+    description:
+      "Premium washed plaster sand for high-quality finishing work.",
     category: "sands",
-    imageUrl:
-      "/src/images/doublewashedplaster.png",
+    imageUrl: "/images/doublewashedplaster.png",
   },
 ];
 
