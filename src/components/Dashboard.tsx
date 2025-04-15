@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Separator } from "./ui/separator";
 import {
   BarChart3,
@@ -48,26 +48,47 @@ const Dashboard = () => {
     totalRevenue: 0
   });
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Check for authenticated user
-    const getUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error("Error fetching user:", error);
-        return;
+    const checkAuthAndLoadData = async () => {
+      setLoading(true);
+      
+      // Check for refresh parameter in URL
+      const searchParams = new URLSearchParams(location.search);
+      const shouldRefresh = searchParams.get('refresh') === 'true';
+      
+      // Remove the refresh parameter from URL if present
+      if (shouldRefresh) {
+        navigate('/dashboard', { replace: true });
       }
       
-      if (data?.user) {
-        setUser(data.user);
-        // Load dashboard data
-        fetchDashboardData(data.user.id);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        setUser(user);
+        
+        // Always fetch data when component mounts or refresh is requested
+        await fetchDashboardData(user.id);
+        
+      } catch (error) {
+        console.error('Error checking auth:', error);
+        navigate('/login');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    getUser();
-  }, []);
+    checkAuthAndLoadData();
+  }, [navigate, location.search]); // Add location.search to dependency array
 
   const fetchDashboardData = async (userId: string) => {
     try {
@@ -114,13 +135,28 @@ const Dashboard = () => {
         .eq('delivery_status', 'pending')
         .single();
         
-      // Calculate outstanding balance (unpaid orders)
-      const { data: unpaidOrders, error: unpaidOrdersError } = await supabase
-        .from('orders')
-        .select('total_amount')
-        .eq('payment_status', 'unpaid');
+      // Calculate outstanding balance using the SQL query that correctly joins user accounts to customers
+      const { data: outstandingData, error: outstandingError } = await supabase
+        .from('invoices')
+        .select(`
+          outstanding_amount,
+          customers!inner (
+            id,
+            name,
+            user_id
+          )
+        `)
+        .gt('outstanding_amount', 0)
+        .eq('customers.user_id', userId);
         
-      const outstandingBalance = unpaidOrders ? unpaidOrders.reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0) : 0;
+      console.log('Outstanding query result:', outstandingData, outstandingError);
+      
+      // Calculate total outstanding from invoices
+      const outstandingBalance = outstandingData 
+        ? outstandingData.reduce((sum, invoice) => {
+            return sum + (parseFloat(invoice.outstanding_amount) || 0);
+          }, 0) 
+        : 0;
       
       setStats({
         totalQuotes: quotesCount?.count || 0,
@@ -244,10 +280,12 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="mt-4">
-              <div className="flex items-center text-sm text-amber-600">
-                <TrendingUp className="h-4 w-4 mr-1" />
-                <span>From unpaid orders</span>
-              </div>
+              <Link to="/dashboard/payments/capture">
+                <Button variant="ghost" size="sm" className="text-purple-600 p-0 h-auto font-medium">
+                  Capture payments
+                  <ArrowUpRight className="h-4 w-4 ml-1" />
+                </Button>
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -371,7 +409,7 @@ const Dashboard = () => {
           className="bg-white rounded-lg shadow-sm p-6 border border-gray-100"
         >
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <Link to="/dashboard/quotes/create">
               <Button className="w-full bg-blue-600 hover:bg-blue-700">
                 <FileText className="mr-2 h-4 w-4" />
@@ -380,7 +418,7 @@ const Dashboard = () => {
             </Link>
             <Link to="/dashboard/quotes">
               <Button variant="outline" className="w-full">
-                <Package className="mr-2 h-4 w-4" />
+                <FileText className="mr-2 h-4 w-4" />
                 View All Quotes
               </Button>
             </Link>
@@ -388,6 +426,12 @@ const Dashboard = () => {
               <Button variant="outline" className="w-full">
                 <Package className="mr-2 h-4 w-4" />
                 View All Orders
+              </Button>
+            </Link>
+            <Link to="/dashboard/payments/capture">
+              <Button variant="outline" className="w-full">
+                <CircleDollarSign className="mr-2 h-4 w-4" />
+                Capture Payments
               </Button>
             </Link>
           </div>

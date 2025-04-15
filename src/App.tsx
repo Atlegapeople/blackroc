@@ -14,6 +14,8 @@ import OrderDetail from "./components/orders/OrderDetail";
 import CustomerList from "./components/customers/CustomerList";
 import InvoiceView from "./components/orders/Invoice";
 import DashboardLayout from "./components/DashboardLayout";
+import PaymentCapture from "./components/payments/PaymentCapture";
+import CreateInvoices from "./components/admin/CreateInvoices";
 import routes from "tempo-routes";
 
 function App() {
@@ -39,6 +41,10 @@ function App() {
             <Route path="orders/:id/invoice" element={<InvoiceView />} />
             <Route path="orders/:id/edit" element={<div className="p-8">Update Order Status (Coming Soon)</div>} />
             <Route path="customers" element={<CustomerList />} />
+            <Route path="payments/capture" element={<PaymentCapture />} />
+            <Route path="payments/capture/:invoiceId" element={<PaymentCapture />} />
+            <Route path="admin/invoices/create" element={<CreateInvoices />} />
+            <Route path="create-invoices" element={<CreateInvoices />} />
           </Route>
         </Routes>
         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}

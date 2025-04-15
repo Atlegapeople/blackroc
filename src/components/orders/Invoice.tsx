@@ -17,11 +17,22 @@ import {
   Mail,
   User,
   AlertCircle,
+  CreditCard,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import logo from '../../images/logo.png';
 import { Skeleton } from '../ui/skeleton';
 import { format } from 'date-fns';
+import PaymentForm from './PaymentForm';
+import PaymentsList from './PaymentsList';
+import { Payment } from '../../lib/interfaces/finance';
+import { getPaymentsForInvoice } from '../../lib/services/financeService';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
 
 interface InvoiceItem {
   id: string;
@@ -67,6 +78,9 @@ const InvoiceView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [remainingAmount, setRemainingAmount] = useState(0);
   
   // React-to-print hook setup
   const handlePrint = useCallback(() => {
@@ -186,6 +200,25 @@ const InvoiceView: React.FC = () => {
         };
 
         setInvoice(invoiceData);
+
+        // NOTE: We've removed the invoice generation code as it's now handled elsewhere
+        // through a different mechanism. The automatic invoice creation happens in the
+        // order processing workflow.
+
+        // Get payments for this invoice
+        try {
+          const invoicePayments = await getPaymentsForInvoice(order.id);
+          setPayments(invoicePayments);
+          
+          // Calculate remaining amount to be paid
+          const totalPaid = invoicePayments.reduce(
+            (sum, payment) => sum + payment.amount, 
+            0
+          );
+          setRemainingAmount(Math.max(0, invoiceData.total - totalPaid));
+        } catch (err) {
+          console.error('Error fetching payments:', err);
+        }
       } catch (error: any) {
         console.error("Error fetching invoice data:", error);
         setError(error.message);
@@ -205,6 +238,32 @@ const InvoiceView: React.FC = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+  
+  const handlePaymentsLoaded = useCallback((loadedPayments: Payment[]) => {
+    setPayments(loadedPayments);
+    const totalPaid = loadedPayments.reduce(
+      (sum, payment) => sum + payment.amount, 
+      0
+    );
+    setRemainingAmount(Math.max(0, invoice?.total || 0 - totalPaid));
+  }, [invoice?.total]);
+
+  const handlePaymentComplete = () => {
+    setShowPaymentForm(false);
+    // Refresh payments data
+    if (id) {
+      getPaymentsForInvoice(id)
+        .then(updatedPayments => {
+          setPayments(updatedPayments);
+          const totalPaid = updatedPayments.reduce(
+            (sum, payment) => sum + payment.amount, 
+            0
+          );
+          setRemainingAmount(Math.max(0, invoice?.total || 0 - totalPaid));
+        })
+        .catch(err => console.error('Error refreshing payments:', err));
+    }
   };
   
   if (loading) {
@@ -286,6 +345,17 @@ const InvoiceView: React.FC = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
+            
+            {invoice.payment_status !== 'paid' && remainingAmount > 0 && (
+              <Button 
+                onClick={() => setShowPaymentForm(true)}
+                className="bg-green-600 hover:bg-green-700 text-white flex items-center"
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                Record Payment
+              </Button>
+            )}
+            
             <Button 
               variant="outline" 
               onClick={handlePrint}
@@ -466,6 +536,35 @@ const InvoiceView: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Payment Section */}
+      {id && (
+        <div className="mt-8">
+          <PaymentsList 
+            invoiceId={id} 
+            onPaymentsLoaded={handlePaymentsLoaded}
+          />
+        </div>
+      )}
+
+      {/* Payment Form Dialog */}
+      <Dialog open={showPaymentForm} onOpenChange={setShowPaymentForm}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Record Payment</DialogTitle>
+          </DialogHeader>
+          
+          {invoice && (
+            <PaymentForm
+              invoiceId={invoice.id}
+              invoiceTotal={invoice.total}
+              remainingAmount={remainingAmount}
+              onPaymentComplete={handlePaymentComplete}
+              onCancel={() => setShowPaymentForm(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

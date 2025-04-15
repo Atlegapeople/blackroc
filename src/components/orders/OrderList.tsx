@@ -392,6 +392,13 @@ export default function OrderList() {
           >
             <FileText className="h-4 w-4 mr-2 stroke-[2.5px]" /> View Quotes
           </Button>
+          
+          <Button 
+            onClick={() => navigate('/dashboard/create-invoices')}
+            className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 ml-2"
+          >
+            <FileText className="h-4 w-4 mr-2 stroke-[2.5px]" /> Create Invoices
+          </Button>
         </div>
       </header>
       

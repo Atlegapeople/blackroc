@@ -17,6 +17,7 @@ import {
   Bell,
   User,
   Menu,
+  CircleDollarSign
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "../lib/supabase";
@@ -51,6 +52,8 @@ const DashboardLayout = () => {
     if (path.includes("/dashboard/quotes")) return "quotes";
     if (path.includes("/dashboard/orders")) return "orders";
     if (path.includes("/dashboard/customers")) return "customers";
+    if (path.includes("/dashboard/payments")) return "payments";
+    if (path.includes("/dashboard/admin")) return "admin";
     if (path.includes("/dashboard/settings")) return "settings";
     return "overview";
   };
@@ -166,6 +169,19 @@ const DashboardLayout = () => {
               </li>
               <li>
                 <Link
+                  to="/dashboard/payments/capture"
+                  className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+                    activeMenu === "payments"
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <CircleDollarSign className="mr-3 h-5 w-5 text-gray-500" />
+                  Payments
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/dashboard/customers"
                   className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                     activeMenu === "customers"
@@ -175,6 +191,19 @@ const DashboardLayout = () => {
                 >
                   <Users className="mr-3 h-5 w-5 text-gray-500" />
                   Customers
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/dashboard/admin/invoices/create"
+                  className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+                    activeMenu === "admin"
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <FileText className="mr-3 h-5 w-5 text-gray-500" />
+                  Create Invoices
                 </Link>
               </li>
               <li>
@@ -272,6 +301,20 @@ const DashboardLayout = () => {
                 </li>
                 <li>
                   <Link
+                    to="/dashboard/payments/capture"
+                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+                      activeMenu === "payments"
+                        ? "bg-gray-100 text-gray-900"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <CircleDollarSign className="mr-3 h-5 w-5 text-gray-500" />
+                    Payments
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/dashboard/customers"
                     className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                       activeMenu === "customers"
@@ -282,6 +325,20 @@ const DashboardLayout = () => {
                   >
                     <Users className="mr-3 h-5 w-5 text-gray-500" />
                     Customers
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/dashboard/admin/invoices/create"
+                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+                      activeMenu === "admin"
+                        ? "bg-gray-100 text-gray-900"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <FileText className="mr-3 h-5 w-5 text-gray-500" />
+                    Create Invoices
                   </Link>
                 </li>
                 <li>

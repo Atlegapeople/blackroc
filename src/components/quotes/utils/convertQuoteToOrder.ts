@@ -1,6 +1,7 @@
 import { supabase } from '../../../lib/supabase';
 import { formatCurrency } from '../../../lib/utils';
 import { useToast } from '../../ui/use-toast';
+import { createInvoiceFromOrder } from '../../../lib/services/financeService';
 
 /**
  * Converts a quote to an order in the database
@@ -99,6 +100,20 @@ export async function convertQuoteToOrder(quoteId: string, customNotes?: string)
           .update({ status: 'ordered' })
           .eq('id', quoteId);
         
+        // 5. Create an invoice for this order
+        try {
+          console.log('Creating invoice for new order:', order.id);
+          const invoiceId = await createInvoiceFromOrder(order.id);
+          if (invoiceId) {
+            console.log('Successfully created invoice:', invoiceId);
+          } else {
+            console.error('Failed to create invoice for order:', order.id);
+          }
+        } catch (invoiceError) {
+          console.error('Error creating invoice for order:', invoiceError);
+          // Don't throw here, as we still want to return the order ID
+        }
+        
         return order.id;
       } else {
         // Not an RLS error, just throw normally
@@ -121,6 +136,20 @@ export async function convertQuoteToOrder(quoteId: string, customNotes?: string)
     if (updateError) {
       console.error('Failed to update quote status:', updateError);
       // We don't throw here as the order was already created successfully
+    }
+
+    // 5. Create an invoice for this order
+    try {
+      console.log('Creating invoice for new order:', order.id);
+      const invoiceId = await createInvoiceFromOrder(order.id);
+      if (invoiceId) {
+        console.log('Successfully created invoice:', invoiceId);
+      } else {
+        console.error('Failed to create invoice for order:', order.id);
+      }
+    } catch (invoiceError) {
+      console.error('Error creating invoice for order:', invoiceError);
+      // Don't throw here, as we still want to return the order ID
     }
     
     return order.id;
